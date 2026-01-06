@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 
+test.beforeEach(({ browserName }) => {
+  test.skip(browserName !== 'chromium');
+});
+
 test('creates passkey', async ({ browser }) => {
 
   const context = await browser.newContext();
