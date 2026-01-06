@@ -1,9 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('creates a passkey and asserts it exists', async ({ browser }) => {
+test('creates passkey', async ({ browser }) => {
 
   const context = await browser.newContext();
-
   const page = await context.newPage();
 
   const client = await context.newCDPSession(page);
@@ -20,41 +19,22 @@ test('creates a passkey and asserts it exists', async ({ browser }) => {
 
   const authenticatorId = result.authenticatorId;
 
-  // //  will allow future logins to use passkey??
-  //     await client.send('WebAuthn.setUserVerified', {
-  //     authenticatorId: authenticatorId,
-  //     isUserVerified: true,
-  //   });
-
-
   await page.goto('https://webauthn.io');
-  await page.getByPlaceholder('example_username').fill('cropdusta');
+  await page.getByPlaceholder('example_username').fill('123');
   await page.getByRole('button', { name: 'Register' }).click();
-
-  // Wait for registration to complete - look for success indicator
   await page.waitForSelector('text=Success', { timeout: 5000 });
 
-
-
-  // get passkey results 
-  //  TODO: check this is 0 at beginning of test
+  // verify passkey created
   const credentials = await client.send('WebAuthn.getCredentials', { authenticatorId });
-
   await expect(credentials.credentials.length).toBe(1);
   await expect(credentials.credentials[0].isResidentCredential).toBe(true);
-  console.log('credentials', credentials);
 
 
   //  refresh and auth with passkey
   await page.reload()
   await expect(credentials.credentials.length).toBe(1);
-  await expect(credentials.credentials[0].isResidentCredential).toBe(true);
-
-  await page.getByPlaceholder('example_username').fill('cropdusta');
+  await page.getByPlaceholder('example_username').fill('123');
   await page.getByRole('button', { name: 'Authenticate' }).click();
 
   await page.waitForSelector(`text=You're logged in!`, { timeout: 5000 });
-
-
-
 });
