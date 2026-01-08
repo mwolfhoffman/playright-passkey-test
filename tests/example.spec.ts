@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 
+//  CDPSession will only work in Chromium-based browsers so skip passkey tests for others
 test.beforeEach(({ browserName }) => {
   test.skip(browserName !== 'chromium');
 });
@@ -17,7 +18,7 @@ test('creates passkey', async ({ browser }) => {
       transport: 'usb',
       hasResidentKey: true,
       hasUserVerification: true,
-      isUserVerified: true,
+      isUserVerified: true, // false to simulate passkey failure
     },
   });
 
@@ -34,7 +35,7 @@ test('creates passkey', async ({ browser }) => {
   await expect(credentials.credentials[0].isResidentCredential).toBe(true);
 
 
-  //  refresh and auth with passkey
+  //  refresh page and make sure auth with previously created passkey. 
   await page.reload()
   await expect(credentials.credentials.length).toBe(1);
   await page.getByPlaceholder('example_username').fill('123');
